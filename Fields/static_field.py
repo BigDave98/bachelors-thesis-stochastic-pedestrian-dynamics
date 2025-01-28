@@ -21,7 +21,6 @@ class StaticField:
         self.static_field[x, y] = value
 
     def set_static_field_ij(self, grid, position, exits):
-
         if self.static_field[position] == 0:
             static_fields_ij = []
 

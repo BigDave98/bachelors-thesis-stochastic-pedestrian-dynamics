@@ -1,4 +1,4 @@
-from config import *
+from utils import *
 from Fields import FloorField, DynamicField, StaticField
 from Cache import Cache
 from Pedestrians import Pedestrians

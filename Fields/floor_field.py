@@ -2,6 +2,7 @@ import numpy as np
 import random
 from typing import List, Tuple
 from Pedestrians import Pedestrian
+from utils import get_min_max
 
 
 class FloorField:
@@ -120,11 +121,7 @@ class FloorField:
         Returns:
             True se número de células ocupadas > threshold
         """
-        y, x = position
-        y_min = max(0, y - radius)
-        y_max = min(self.grid.shape[0], y + radius + 1)
-        x_min = max(0, x - radius)
-        x_max = min(self.grid.shape[1], x + radius + 1)
+        y_min, y_max, x_min, x_max = get_min_max(position, self.grid, radius)
 
         # Conta células ocupadas (valor 1) na vizinhança
         occupied_cells = np.sum(self.grid[y_min:y_max, x_min:x_max] == 1)
