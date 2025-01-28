@@ -1,7 +1,7 @@
 width = 50
 height = 50
 
-num_pedestrians = 250
+num_pedestrians = 10
 
 exits = ((30, 0),  #lateral esquerda
           (height-1, width//2),  # Saída inferior , (height-1, width//2 + 1)
