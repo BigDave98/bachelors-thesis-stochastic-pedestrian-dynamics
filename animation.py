@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import Matrix.matrix_operations as mo
 import numpy as np
+from config import exits, moves, width, height
 from PathFinding import get_path
 from matplotlib.animation import FuncAnimation
 from Matrix import PreferenceMatrix

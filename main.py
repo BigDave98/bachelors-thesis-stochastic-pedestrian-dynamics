@@ -4,7 +4,6 @@ from Cache import Cache
 from Pedestrians import Pedestrians
 from animation import create_animation, get_frames
 def main():
-    steps = 0
     cache = Cache()
 
     #Inicia o grid com as saidas e quartos
@@ -16,14 +15,10 @@ def main():
     pedestrians_info = Pedestrians()
     pedestrians_info.info = grid.set_pedestrians(pedestrians_info, num_pedestrians)
 
-    # Inicia o DynamicField
-    dynamic_field = DynamicField(width, height)
-
-    # Inicia o StaticField:
-    static_field = StaticField(width, height)
+    # Inicia DynamicField e StaticField
+    dynamic_field, static_field = DynamicField(width, height), StaticField(width, height)
 
     frames = get_frames(grid, cache, rooms, pedestrians_info, dynamic_field, static_field)
-
     create_animation(frames)
 
 
