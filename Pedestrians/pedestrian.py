@@ -1,57 +1,92 @@
 import numpy as np
 import random
 from utils import directions
-
+from typing import Optional, Tuple, List, Any, Union
+from numpy.typing import NDArray
 
 class Pedestrian:
-    def __init__(self):
-        self.id = 0
-        self.position = None
-        self.prefered_move = None
-        self.best_move = None
-        self.prefered_next_position = None
-        self.chosen_exit = None
+    """
+        Represents a single pedestrian in a crowd movement simulation.
 
+        This class implements the movement logic and decision making of a pedestrian
+        in a discretized environment (grid), considering obstacles and exits.
 
-    def is_near_exit(self, radius=3):
+        Attributes:
+            id (int): Unique identifier for the pedestrian.
+            position (tuple): Current position in the grid (y, x).
+            best_move (tuple): Best movement calculated based on static_field.
+            prefered_move (tuple): Calculated preferred movement for the next step.
+            prefered_next_position (tuple): Next preferred position based on chosen movement.
+            chosen_exit (tuple): Coordinates of the chosen exit destination (y, x).
         """
-        Verifica se a posição está próxima à saída.
+    def __init__(self) -> None:
+        """Initialize a new pedestrian with default values."""
+        self.id: int = 0
+        self.position: Optional[Tuple[int, int]] = None
+        self.prefered_move: Optional[Tuple[int, int]] = None
+        self.best_move: Optional[Tuple[int, int]] = None
+        self.prefered_next_position: Optional[Tuple[int, int]] = None
+        self.chosen_exit: Optional[Tuple[int, int]] = None
+
+
+    def is_near_exit(self, radius=3)  -> bool:
+        """
+        Check if the pedestrian is near their chosen exit.
+
+        Args:
+            radius (int, optional): Proximity radius in cells. Defaults to 3.
+
+        Returns:
+            bool: True if pedestrian is within exit radius, False otherwise.
         """
         y, x = self.position
         exit_y, exit_x = self.chosen_exit
 
-        # Verifica se o pedestre está a um raio de 4 celulas da saida, se sim retorna true, cc false
         return abs(y - exit_y) <= radius and abs(x - exit_x) <= radius
 
-    """
-    Verifica se uma posição está dentro de algum quarto e retorna a posição da porta.
-    Args:
-        position: Tupla (y, x) com a posição do pedestre
-        rooms_info: Lista de dicionários com informações dos quartos
-    Returns:
-        Tupla (True/False, door_position)
-        - True e posição da porta se estiver em algum quarto
-        - False e None se não estiver em nenhum quarto ou estiver na porta
-    """
-    def is_in_room(self, rooms_info):
+    def is_in_room(self, rooms_info: List[dict]) -> Tuple[bool, Optional[Tuple[int, int]]]:
+        """
+        Check if the pedestrian is inside a room and return the door position.
+
+        Args:
+            rooms_info (list): List of dictionaries containing room information.
+                        Each dictionary must contain room coordinates('start', 'end') and 'door' keys.
+
+        Returns:
+            tuple: Pair (is_in_room, door_position) where:
+                - is_in_room (bool): True if in a room, False otherwise
+                - door_position (tuple or None): Door position if in a room,
+                None otherwise
+                """
         y, x = self.position
 
         for room in rooms_info:
             start_y, start_x = room['start']
             end_y, end_x = room['end']
 
-            # Se estiver na porta, considera como fora do quarto
+            # Check if pedestrian is at the door
             if self.position == room['door']:
                 return False, None
 
-            # Verifica se está dentro dos limites do quarto
+            # Check is pedestrian is inside the room
             if start_y <= y < end_y and start_x <= x < end_x:
                 return True, room['door']
 
         return False, None
 
-    def get_neighbors(self, grid):
-        """Retorna as células vizinhas válidas evitando paredes."""
+    def get_neighbors(self, grid: Any) -> List[Tuple[int, int]]:
+        """
+        Get valid neighboring cells for movement.
+
+        Args:
+            grid (Grid): Grid object containing environment information.
+
+        Returns:
+            list: List of tuples (y, x) representing valid neighboring cells.
+
+        Note:
+            Cells with value 3 in the grid are considered walls and are ignored.
+        """
         rows, cols = grid.height, grid.width
         neighbors = []
 
@@ -62,7 +97,29 @@ class Pedestrian:
 
         return neighbors
 
-    def get_possible_moves(self, width, height, moves, grid, center_x = 1, center_y = 1):
+    def get_possible_moves(
+        self,
+        width: int,
+        height: int,
+        moves: List[List[Tuple[int, int]]],
+        grid: NDArray,
+        center_x: int = 1,
+        center_y: int = 1
+    ) -> NDArray:
+        """
+        Calculate all possible moves considering the environment.
+
+        Args:
+            width (int): Grid width.
+            height (int): Grid height.
+            moves (list): List of possible moves.
+            grid (numpy.ndarray): Matrix representing the environment.
+            center_x (int, optional): Center x coordinate. Defaults to 1.
+            center_y (int, optional): Center y coordinate. Defaults to 1.
+
+        Returns:
+            numpy.ndarray: 3x3 matrix containing possible moves or None for invalid moves.
+        """
         possible_moves = np.zeros((3, 3), dtype=object)
         cell_position = list(self.position)
 
@@ -81,7 +138,13 @@ class Pedestrian:
 
         return possible_moves
 
-    def get_best_move(self, path):
+    def get_best_move(self, path: List[Tuple[int, int]]) -> None:
+        """
+        Determine the best move based on the provided path.
+
+        Args:
+            path (list): List of positions representing the path to the goal.
+        """
         if len(path) > 1:
             p1 = self.position
             p2 = path[1]
@@ -89,7 +152,20 @@ class Pedestrian:
             self.best_move = tuple(b - a for a, b in zip(p1, p2))
 
     @staticmethod
-    def chose_next_move(rotated_preference_matrix, moves):
+    def chose_next_move(
+            rotated_preference_matrix: NDArray,
+            moves: List[List[Optional[Tuple[int, int]]]]
+    ) -> List[Optional[Tuple[int, int]]]:
+        """
+        Choose next move based on a preference matrix.
+
+        Args:
+            rotated_preference_matrix (numpy.ndarray): Rotated preference matrix.
+            moves (list): List of possible moves.
+
+        Returns:
+            tuple: Chosen move based on preference matrix probabilities.
+        """
         moves_ = []
         for line in moves:
             for move in line:
@@ -100,10 +176,24 @@ class Pedestrian:
 
         return next_move
 
-    def get_move(self, matrix, possible_moves):
+    def get_move(
+        self,
+        matrix: NDArray,
+        possible_moves: NDArray
+    ) -> None:
+        """
+        Get a valid move based on the preference matrix.
+
+        Args:
+            matrix (numpy.ndarray): Preference matrix.
+            possible_moves (numpy.ndarray): Matrix of possible moves.
+
+        Note:
+            Keeps trying until a valid (non-None) move is found.
+        """
         move_null = True
         while move_null:
-            # Retorna o proximo movimento baseado na matriz de preferencias:
+            # Return next move based on the preference matrix
             self.prefered_move = self.chose_next_move(matrix, possible_moves)[0]
 
             if self.prefered_move != None:
