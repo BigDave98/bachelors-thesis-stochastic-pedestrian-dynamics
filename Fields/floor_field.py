@@ -1,54 +1,111 @@
+from typing import List, Tuple, Dict, Union
 import numpy as np
 import random
-from typing import List, Tuple
 from Pedestrians import Pedestrian
 from utils import get_min_max
+from numpy.typing import NDArray
+
+Position = Tuple[int, int]
+Size = Tuple[int, int]
+RoomInfo = Dict[str, Union[Position, Position]]
 
 
 class FloorField:
-    def __init__(self, width: int, height: int):
+    """
+    Manages the floor environment grid for pedestrian simulation.
+
+    This class handles the creation and management of the environment grid,
+    including walls, exits, rooms, and pedestrian positioning.
+
+    Attributes:
+        width (int): Width of the environment grid
+        height (int): Height of the environment grid
+        grid (NDArray): Matrix representing the environment where:
+            0: Empty cell
+            1: Occupied by pedestrian
+            2: Exit
+            3: Wall
+    """
+
+    def __init__(self, width: int, height: int) -> None:
+        """
+        Initialize floor field with given dimensions.
+
+        Args:
+            width: Width of the environment grid
+            height: Height of the environment grid
+        """
         self.width = width
         self.height = height
+        self.grid: NDArray = np.zeros((width, height))
 
-        self.grid = np.zeros((width, height))
+    def __getitem__(self, position: Position) -> float:
+        """
+        Enable grid access using grid[y,x] syntax.
 
-    def __getitem__(self, position):
-        """Permite acessar o grid usando grid[y,x]"""
+        Args:
+            position: Tuple of (y, x) coordinates
+
+        Returns:
+            Value at the specified position
+        """
         return self.grid[position]
 
-    def __setitem__(self, position, value):
-        """Permite modificar o grid usando grid[y,x] = value"""
+    def __setitem__(self, position: Position, value: float) -> None:
+        """
+        Enable grid modification using grid[y,x] = value syntax.
+
+        Args:
+            position: Tuple of (y, x) coordinates
+            value: Value to set at the position
+        """
         self.grid[position] = value
 
-    def add_exit(self, exits: Tuple[Tuple]) -> None:
+    def add_exit(self, exits: List[Position]) -> None:
+        """
+        Add exits to the environment grid.
+
+        Args:
+            exits: List of exit coordinates
+        """
         for exit_coordinates in exits:
             self.grid[exit_coordinates] = 2
 
-    def add_walls(self, start_pos, size, door_pos):
+    def add_walls(self, start_pos: Position, size: Size, door_pos: Position) -> None:
+        """
+        Add walls to create a room with a door.
+
+        Args:
+            start_pos: Starting position (y, x) of the room
+            size: Room dimensions (height, width)
+            door_pos: Door position (y, x)
+        """
         y, x = start_pos
         h, w = size
 
-        # Adiciona paredes
-        self.grid[y:y + h, x] = 3  # Parede esquerda
-        self.grid[y:y + h, x + w - 1] = 3  # Parede direita
-        self.grid[y, x:x + w] = 3  # Parede superior
-        self.grid[y + h - 1, x:x + w] = 3  # Parede inferior
+        # Add walls
+        self.grid[y:y + h, x] = 3  # Left wall
+        self.grid[y:y + h, x + w - 1] = 3  # Right wall
+        self.grid[y, x:x + w] = 3  # Top wall
+        self.grid[y + h - 1, x:x + w] = 3  # Bottom wall
 
-        # Adiciona porta
+        # Add door
         door_y, door_x = door_pos
         self.grid[door_y, door_x] = 0
 
-    def setup_rooms(self):
+    def setup_rooms(self) -> List[RoomInfo]:
         """
-        Cria 3 quartos nas posições especificadas e retorna suas informações.
+        Create 3 rooms at specified positions.
 
         Returns:
-            grid: Grid atualizado com os quartos
-            rooms_info: Lista de dicionários com informações dos quartos
+            List of dictionaries containing room information:
+                - 'start': Starting position (y, x)
+                - 'end': End position (y, x)
+                - 'door': Door position (y, x)
         """
-        rooms_info = []
+        rooms_info: List[RoomInfo] = []
 
-        # Quarto 1: Inferior Esquerdo
+        # Room 1: Bottom Left
         room1_start = (self.height - 15, 5)
         room1_size = (15, 15)
         door1_pos = (self.height - 15, 12)
@@ -60,7 +117,7 @@ class FloorField:
             'door': door1_pos
         })
 
-        # Quarto 2: Inferior Direito
+        # Room 2: Bottom Right
         room2_start = (self.height - 15, 30)
         room2_size = (15, 20)
         door2_pos = (self.height - 15, 40)
@@ -72,7 +129,7 @@ class FloorField:
             'door': door2_pos
         })
 
-        # Quarto 3: Superior Central
+        # Room 3: Top Center
         room3_start = (0, 10)
         room3_size = (25, 20)
         door3_pos = (24, 20)
@@ -86,13 +143,32 @@ class FloorField:
 
         return rooms_info
 
-    def available_positions(self, num_pedestrians):
-        # Verifica as coordenadas que estão livres no grid para posicionar os pedestres
+    def available_positions(self, num_pedestrians: int) -> List[Position]:
+        """
+        Find available positions for pedestrian placement.
+
+        Args:
+            num_pedestrians: Number of pedestrians to place
+
+        Returns:
+            List of available positions (y, x)
+        """
+        # Find coordinates that are free (value 0) in the grid
         available_positions = [(i, j) for i in range(self.height) for j in range(self.width) if self.grid[i, j] == 0]
 
         return available_positions
 
-    def set_pedestrians(self, pedestrians, num_pedestrians):
+    def set_pedestrians(self, pedestrians: any, num_pedestrians: int) -> List[Pedestrian]:
+        """
+        Place pedestrians randomly in available positions.
+
+        Args:
+            pedestrians: Pedestrians collection object
+            num_pedestrians: Number of pedestrians to place
+
+        Returns:
+            List of placed pedestrian objects
+        """
         avaliable_positions = self.available_positions(num_pedestrians)
         positions = random.sample(avaliable_positions, num_pedestrians)
 
@@ -108,22 +184,26 @@ class FloorField:
 
         return pedestrians.info
 
-    def check_congestion(self, position, threshold=3, radius=2):
+    def check_congestion(
+            self,
+            position: Position,
+            threshold: int = 3,
+            radius: int = 2
+    ) -> bool:
         """
-        Verifica se há congestionamento ao redor de uma posição.
+        Check if there is congestion around a position.
 
         Args:
-            grid: Matriz do ambiente
-            position: Tupla (y, x) da posição atual
-            threshold: Número de células ocupadas para considerar congestionamento
-            radius: Raio para verificar vizinhança
+            position: Current position (y, x)
+            threshold: Number of occupied cells to consider congestion
+            radius: Radius to check neighborhood
 
         Returns:
-            True se número de células ocupadas > threshold
+            True if number of occupied cells > threshold
         """
         y_min, y_max, x_min, x_max = get_min_max(position, self.grid, radius)
 
-        # Conta células ocupadas (valor 1) na vizinhança
+        # Count occupied cells (value 1) in neighborhood
         occupied_cells = np.sum(self.grid[y_min:y_max, x_min:x_max] == 1)
 
         return bool(occupied_cells > threshold)
