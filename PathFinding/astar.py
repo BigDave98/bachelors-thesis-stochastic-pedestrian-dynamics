@@ -128,7 +128,7 @@ def find_path(
             if grid[neighbor] == 3:
                 continue
 
-            tentative_g_score = g_score[current] + get_movement_cost(consider_congestion, current, neighbor, grid)
+            tentative_g_score = g_score[current] + get_movement_cost(consider_congestion, current, neighbor, grid.grid)
 
             if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
