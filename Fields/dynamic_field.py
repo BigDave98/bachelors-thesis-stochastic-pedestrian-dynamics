@@ -1,51 +1,107 @@
+from typing import List, Tuple
 import numpy as np
+from numpy.typing import NDArray
+
+Position = Tuple[int, int]
+Positions = List[Position]
+
+
 class DynamicField:
-    def __init__(self, width: int, height: int):
+    """
+    Manages the dynamic floor field for pedestrian simulation.
+
+    This class handles a dynamic field that tracks pedestrian movement history
+    and influences future movement decisions through pheromone-like traces.
+
+    Attributes:
+        width (int): Width of the dynamic field
+        height (int): Height of the dynamic field
+        dynamic_field (NDArray): Matrix storing dynamic field values
+    """
+
+    def __init__(self, width: int, height: int) -> None:
+        """
+        Initialize dynamic field with given dimensions.
+
+        Args:
+            width: Width of the field
+            height: Height of the field
+        """
         self.width = width
         self.height = height
+        self.dynamic_field: NDArray = np.zeros((width, height))
 
-        self.dynamic_field = np.zeros((width, height))
+    def __getitem__(self, position: Position) -> float:
+        """
+        Enable field access using field[y,x] syntax.
 
-    def __getitem__(self, position):
-        """Permite acessar o grid usando grid[y,x]"""
+        Args:
+            position: Tuple of (y, x) coordinates
+
+        Returns:
+            Value at the specified position
+        """
         return self.dynamic_field[position]
 
-    def __setitem__(self, position, value):
-        """Permite modificar o grid usando grid[y,x] = value"""
+    def __setitem__(self, position: Position, value: float) -> None:
+        """
+        Enable field modification using field[y,x] = value syntax.
+
+        Args:
+            position: Tuple of (y, x) coordinates
+            value: Value to set at the position
+        """
         self.dynamic_field[position] = value
 
     def decay(self):
         if np.any(self.dynamic_field > 5):
            self.dynamic_field /= 2
 
-    def update_dynamic_field(self, positions):
+    def update_dynamic_field(self, positions: Positions) -> None:
+        """
+        Update dynamic field based on pedestrian positions.
+
+        Args:
+            positions: List of positions to update
+
+        Note:
+            Increments field value at each position and applies decay
+        """
         self.dynamic_field[tuple(zip(*positions))] += 1
         self.decay()
 
-    def get_neighbors_matrix(self, position):
+    def get_neighbors_matrix(self, position: Position) -> NDArray:
         """
-        Retorna uma matriz 3x3 com os valores ao redor da posição.
+        Get a 3x3 matrix of neighboring field values around a position.
 
         Args:
-            matriz: A matriz original
-            posicao: Tupla (y, x) com a posição central
+            position: Tuple (y, x) of center position
 
         Returns:
-            Matriz 3x3 numpy com os valores vizinhos
+            3x3 numpy matrix containing neighboring values.
+            The center value (current position) is set to 0.
+            Out-of-bounds positions are set to 0.
+
+        Note:
+            For a position (y,x), returns values in this pattern:
+            [[(y-1,x-1), (y-1,x), (y-1,x+1)],
+             [(y,x-1),   (y,x),   (y,x+1)],
+             [(y+1,x-1), (y+1,x), (y+1,x+1)]]
         """
         y, x = position
         neighbors = np.zeros((3, 3))
 
         for j in range(3):
             for i in range(3):
-                # Calcula a posição real na matriz original
+                # Calculate actual position in original matrix
                 pos_y = y + (i - 1)  # -1, 0, 1
                 pos_x = x + (j - 1)  # -1, 0, 1
 
-                # Verifica se a posição é válida na matriz original
+                # Check if position is valid in original matrix
                 if 0 <= pos_y < self.height and 0 <= pos_x < self.width:
                     neighbors[i, j] = self.dynamic_field[pos_y, pos_x]
 
+        # Set center value to 0
         neighbors[1, 1] = 0
 
         return neighbors
