@@ -23,9 +23,10 @@ class Pedestrian:
         """Initialize a new pedestrian with default values."""
         self.id: int = 0
         self.position: Optional[Tuple[int, int]] = None
-        self.prefered_move: Optional[Tuple[int, int]] = None
         self.best_move: Optional[Tuple[int, int]] = None
+        self.prefered_move: Optional[Tuple[int, int]] = None
         self.prefered_next_position: Optional[Tuple[int, int]] = None
+        self.prob_prefered_next_position: Optional[int] = None
         self.chosen_exit: Optional[Tuple[int, int]] = None
 
 
@@ -151,8 +152,7 @@ class Pedestrian:
 
             self.best_move = tuple(b - a for a, b in zip(p1, p2))
 
-    @staticmethod
-    def chose_next_move(
+    def chose_next_move(self,
             rotated_preference_matrix: NDArray,
             moves: List[List[Optional[Tuple[int, int]]]]
     ) -> List[Optional[Tuple[int, int]]]:
@@ -172,9 +172,10 @@ class Pedestrian:
                 moves_.append(move)
 
         probs = np.array(rotated_preference_matrix).flatten()
-        next_move = random.choices(moves_, probs)
+        self.prefered_move = random.choices(moves_, probs)[0]
 
-        return next_move
+        next_move_index = moves_.index(self.prefered_move)
+        self.prob_prefered_next_position = probs[next_move_index]
 
     def get_move(
         self,
@@ -194,7 +195,7 @@ class Pedestrian:
         move_null = True
         while move_null:
             # Return next move based on the preference matrix
-            self.prefered_move = self.chose_next_move(matrix, possible_moves)[0]
+            self.chose_next_move(matrix, possible_moves)
 
             if self.prefered_move != None:
                 move_null = False
