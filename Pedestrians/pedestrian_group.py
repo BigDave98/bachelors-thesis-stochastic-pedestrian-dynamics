@@ -27,7 +27,24 @@ class Pedestrians:
         self.probs_prefered_next_positions: List[int] = []
 
     @staticmethod
-    def normalize_move_probs(probs):
+    def normalize_move_probs(probs: List[float]) -> List[float]:
+        """
+        Normalize a list of probabilities of movement so they sum to 1.
+
+        Args:
+            probs: List of probability values to normalize
+
+        Returns:
+            List of normalized probabilities that sum to 1
+
+        Raises:
+            ValueError: If any probability is negative
+            TypeError: If input contains non-numeric values
+
+        Example:
+            >>> normalize_move_probs([2, 3, 5])
+            [0.2, 0.3, 0.5]
+        """
         probs_ = []
         sum_probs = sum(probs)
         for prob_ in probs:
