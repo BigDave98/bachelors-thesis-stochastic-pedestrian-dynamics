@@ -1,21 +1,25 @@
 import numpy as np
+from numpy.typing import NDArray
 
-def normalize_matrix(matrix):
+
+def normalize_matrix(matrix: NDArray) -> NDArray:
     """
-    Normaliza os valores da matriz para que a soma total seja 1.
+    Normalize the matrix values so that the total sum equals 1.
 
     Args:
-        matriz: Matriz numpy para normalizar
+        matrix: NumPy matrix to normalize
 
     Returns:
-        Matriz normalizada onde a soma de todos os elementos é 1
+        Normalized matrix where the sum of all elements is 1
+
+    Note:
+        If the sum of the matrix is 0, returns the original matrix.
+        Sets all elements with value 1 to 0 before normalization.
     """
-    # Evita divisão por zero
+    # Avoid division by zero
     if np.sum(matrix) == 0:
         return matrix
 
     matrix[matrix == 1] = 0
-
-    matriz_ = matrix / np.sum(matrix)
 
     return matrix / np.sum(matrix)
