@@ -6,7 +6,9 @@ from numpy.typing import NDArray
 width: int = 50
 height: int = 50
 
-num_pedestrians = 10
+is_rooms = False
+
+num_pedestrians = 100
 
 # Exit positions: (left wall, top exit, right wall)
 exits = ((30, 0),  #left wall

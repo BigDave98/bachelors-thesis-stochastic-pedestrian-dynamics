@@ -12,6 +12,7 @@ Grid = NDArray
 def get_frames(
    grid: Any,
    cache: Any,
+   is_rooms: bool,
    rooms: List[dict],
    pedestrians_info: Any,
    dynamic_field: Any,
@@ -23,6 +24,7 @@ def get_frames(
    Args:
        grid: Environment grid
        cache: Path cache object
+       is_rooms: Indicates if the simulation have rooms
        rooms: List of room information
        pedestrians_info: Pedestrian collection object
        dynamic_field: Dynamic field object
@@ -38,8 +40,13 @@ def get_frames(
 
         # Calculate preferred next position for each pedestrian
         for pedestrian in pedestrians_info.info:
-            # Check if inside a room, returns TRUE and door position if so
-            inside_room, door_position = pedestrian.is_in_room(rooms)
+            inside_room = False
+            door_position = None
+
+            if is_rooms:
+                # Check if inside a room, returns TRUE and door position if so
+                inside_room, door_position = pedestrian.is_in_room(rooms)
+
 
             selected_static_field, pedestrian = static_field.get_static_field(inside_room,
                                                                               door_position,
