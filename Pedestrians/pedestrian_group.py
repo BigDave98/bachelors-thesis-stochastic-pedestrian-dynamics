@@ -24,6 +24,17 @@ class Pedestrians:
         self.info: List[Pedestrian] = []
         self.positions: List[Tuple[int, int]] = []
         self.prefered_next_positions: List[Tuple[int, int]] = []
+        self.probs_prefered_next_positions: List[int] = []
+
+    @staticmethod
+    def normalize_move_probs(probs):
+        probs_ = []
+        sum_probs = sum(probs)
+        for prob_ in probs:
+            prob_movement = prob_/sum_probs
+            probs_.append(prob_movement)
+        return probs_
+
 
     def solve_conflicts(self) -> None:
         """
@@ -38,6 +49,7 @@ class Pedestrians:
             # Update current positions and preferred next positions
             self.positions = [pedestrian.position for pedestrian in self.info]
             self.prefered_next_positions = [pedestrian.prefered_next_position for pedestrian in self.info]
+            self.probs_prefered_next_positions = [pedestrian.prob_prefered_next_position for pedestrian in self.info]
 
             counter = Counter(self.prefered_next_positions)
 
@@ -50,9 +62,16 @@ class Pedestrians:
                 conflicts_index = {position: [idx for idx, pos in enumerate(self.prefered_next_positions) if pos == position]
                                    for position in conflicts}  # indices
 
+                probs_of_each_move = {position: [prob for idx, prob in enumerate(self.probs_prefered_next_positions) if idx in conflicts_index[position]]
+                          for position in conflicts_index}
+
+                # Normalized probs according to A Schadschneider principle
+                probs_ = {position: self.normalize_move_probs(probs_of_each_move[position])
+                            for position in conflicts_index}
+
                 # Randomly select one pedestrian for each conflicting position
                 random_pedestrian = {
-                    position: [random.choices(value)[0] for key, value in conflicts_index.items() if key == position]
+                    position: [random.choices(value, probs_[key])[0] for key, value in conflicts_index.items() if key == position]
                     for position in conflicts_index}  # w
 
                 # Resolve conflicts by making non-selected pedestrians stay in place
