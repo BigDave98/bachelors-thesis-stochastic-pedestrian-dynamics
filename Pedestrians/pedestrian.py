@@ -130,8 +130,8 @@ class Pedestrian:
                 pos_x = center_x + move[0]
                 pos_y = center_y + move[1]
 
-                # Verifica se o movimento é válido (dentro do grid e não é parede)
-                if ((0 <= new_pos[0] < height and 0 <= new_pos[1] < width and grid[new_pos[0], new_pos[1]] != 3 and grid[new_pos[0], new_pos[1]] != 1) or move == ( 0,  0)):
+                # Verifica se o movimento é válido (dentro do grid e não é parede) posso remover ultima verificação
+                if ((0 <= new_pos[0] < height and 0 <= new_pos[1] < width and grid[new_pos[0], new_pos[1]] != 3 and grid[new_pos[0], new_pos[1]] != 1)):
                     possible_moves[pos_x, pos_y] = move
 
                 else:

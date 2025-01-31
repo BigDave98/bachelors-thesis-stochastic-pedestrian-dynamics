@@ -62,6 +62,7 @@ def get_frames(
                             cache,
                             grid)
 
+            # Best move to exit
             pedestrian.get_best_move(path)
 
             cache.clear_cache(steps)
