@@ -1,6 +1,8 @@
-from typing import List, Tuple
 import numpy as np
+from typing import List, Tuple
 from numpy.typing import NDArray
+from utils import kernel, delta, diffusion_coef
+from scipy.ndimage import convolve
 
 Position = Tuple[int, int]
 Positions = List[Position]
@@ -53,9 +55,18 @@ class DynamicField:
         """
         self.dynamic_field[position] = value
 
-    def decay(self):
-        if np.any(self.dynamic_field > 5):
-           self.dynamic_field /= 2
+    def decay_and_diffuse(self) -> None:
+        # Apply Diffusion
+        diffused = convolve(self.dynamic_field , kernel)
+
+        # Aply decay
+        self.dynamic_field = self.dynamic_field  * (1 - delta)
+
+        # Function (7) from C. Burstedde Article
+        self.dynamic_field += (diffusion_coef * diffused)
+
+        # Limita valores entre 0 e 1
+        self.dynamic_field = np.clip(self.dynamic_field, 0, 1)
 
     def update_dynamic_field(self, positions: Positions) -> None:
         """
@@ -68,7 +79,7 @@ class DynamicField:
             Increments field value at each position and applies decay
         """
         self.dynamic_field[tuple(zip(*positions))] += 1
-        self.decay()
+        self.decay_and_diffuse()
 
     def get_neighbors_matrix(self, position: Position) -> NDArray:
         """

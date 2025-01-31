@@ -6,9 +6,12 @@ from numpy.typing import NDArray
 width: int = 50
 height: int = 50
 
-is_rooms = False
+#Number of pedestrians
+num_pedestrians: int = 100
 
-num_pedestrians = 100
+# No obstacles(False) / Obstacles(True)
+is_rooms: bool = False
+
 
 # Exit positions: (left wall, top exit, right wall)
 exits = ((30, 0),  #left wall
@@ -37,6 +40,15 @@ directions: List[Tuple[int, int]] = [
    # Diagonal movements
    (1,  1), (1, -1), (-1, 1), (-1, -1)
 ]
+
+#Difusion Kernel (Moore Neig)
+kernel = np.array([[0.05, 0.2, 0.05],
+                   [0.2, 0.0, 0.2],
+                   [0.05, 0.2, 0.05]])
+
+# Dynamic Field decay and diffusion parameters
+delta: float = 0.005
+diffusion_coef: float = 0.01875
 
 
 def get_min_max(
