@@ -56,16 +56,28 @@ class DynamicField:
         self.dynamic_field[position] = value
 
     def decay_and_diffuse(self) -> None:
-        # Apply Diffusion
+        """
+        Apply decay and diffusion to the dynamic field following Burstedde's model.
+
+        Implements a three-step process:
+        1. Applies diffusion using convolution
+        2. Applies exponential decay
+        3. Combines diffusion and decay effects according to equation 7 from
+            Burstedde's paper
+
+        Note:
+            Final values are clipped between 0 and 1
+        """
+        # Apply diffusion using convolution
         diffused = convolve(self.dynamic_field , kernel)
 
-        # Aply decay
+        # Apply decay
         self.dynamic_field = self.dynamic_field  * (1 - delta)
 
-        # Function (7) from C. Burstedde Article
+        # Combine effects according to equation 7 from C. Burstedde Article
         self.dynamic_field += (diffusion_coef * diffused)
 
-        # Limita valores entre 0 e 1
+        # Clip values between 0 and 1
         self.dynamic_field = np.clip(self.dynamic_field, 0, 1)
 
     def update_dynamic_field(self, positions: Positions) -> None:
