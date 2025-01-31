@@ -62,7 +62,7 @@ Cell values:
 - Conflict resolution for multiple pedestrians
 
 # Project Structure
-
+```bash
 pedestrian_simulation/
 ├── src/
 │   ├── Cache/         # Core classes
@@ -89,7 +89,7 @@ pedestrian_simulation/
 │   ├── main.py # Run aplication
 │   │ 
 │   └── utils.py # Core values to animation
-
+```
 
 # Implementation Details
 ## Configuration
