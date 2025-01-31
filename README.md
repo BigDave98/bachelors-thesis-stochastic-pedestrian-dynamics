@@ -15,13 +15,13 @@ pip install -r requirements.txt
 
 # Setup
 
-1- Clone repository:
+## 1- Clone repository:
 ```bash
 git clone https://github.com/yourusername/pedestrian-simulation.git
 cd pedestrian-simulation
 ```
 
-## Configure the number of pedestrians in utils.py:
+## 2 -Configure the number of pedestrians in utils.py:
 simulation:
   num_pedestrians: 10
 
@@ -95,17 +95,22 @@ pedestrian_simulation/
 ## Configuration
 utils.py
 # simulation:
+```bash
   width: 50
   height: 50
   num_pedestrians: 100
+```
   
 # exits:
+```bash
   - [30, 0]    # Left wall
   - [49, 25]   # Top exit 
   - [30, 49]   # Right wall
-
+```
 # movement:
  ## preference_matrix:
+```bash
     - [0.055, 0.850, 0.055]
     - [0.010, 0.000, 0.010]
     - [0.007, 0.006, 0.007]
+```
